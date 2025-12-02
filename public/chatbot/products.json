@@ -1,0 +1,16 @@
+[
+  {
+    "id": "p_1",
+    "name": "חבילת סייבר בסיסית",
+    "price": 500,
+    "description": "בדיקת חולשות בסיסית לאתר תדמית",
+    "image": "https://via.placeholder.com/150"
+  },
+  {
+    "id": "p_2",
+    "name": "הגנת DDOS מתקדמת",
+    "price": 1200,
+    "description": "הגנה מלאה מפני התקפות מניעת שירות",
+    "image": "https://via.placeholder.com/150"
+  }
+]

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saban Cyber Bot - Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-800 text-white min-h-screen p-8">
+
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8 text-center text-blue-400">מערכת ניהול בוט - GitHub Mode</h1>
+        
+        <!-- Auth Section -->
+        <div class="bg-gray-700 p-6 rounded-lg mb-6 shadow-lg border border-gray-600">
+            <h2 class="text-xl font-semibold mb-4">אימות מול GitHub</h2>
+            <div class="flex gap-4">
+                <input type="password" id="gh-token" placeholder="הדבק כאן את ה-Personal Access Token שלך" class="flex-1 p-2 rounded bg-gray-900 border border-gray-600 focus:border-blue-500 focus:outline-none text-white">
+                <button onclick="adminApp.loadData()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded font-bold transition">טען נתונים</button>
+            </div>
+            <p class="text-xs text-gray-400 mt-2">הטוקן נדרש לכתיבה (Save) ולקריאה אם המאגר פרטי. הטוקן לא נשמר בשרת.</p>
+        </div>
+
+        <!-- Editor Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Knowledge Base Editor -->
+            <div class="bg-gray-700 p-4 rounded-lg border border-gray-600">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="font-bold text-green-400">Knowledge Base</h3>
+                    <button onclick="adminApp.saveFile('knowledge_base.json')" class="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm">שמור שינויים</button>
+                </div>
+                <textarea id="json-kb" class="w-full h-96 bg-gray-900 font-mono text-sm p-2 rounded border border-gray-600 focus:border-green-500 focus:outline-none text-green-100" spellcheck="false"></textarea>
+            </div>
+
+            <!-- Products Editor -->
+            <div class="bg-gray-700 p-4 rounded-lg border border-gray-600">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="font-bold text-purple-400">Products</h3>
+                    <button onclick="adminApp.saveFile('products.json')" class="bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded text-sm">שמור שינויים</button>
+                </div>
+                <textarea id="json-products" class="w-full h-96 bg-gray-900 font-mono text-sm p-2 rounded border border-gray-600 focus:border-purple-500 focus:outline-none text-purple-100" spellcheck="false"></textarea>
+            </div>
+
+        </div>
+        
+        <div id="status-msg" class="mt-4 text-center font-bold text-lg"></div>
+    </div>
+
+    <script type="module" src="./admin.js"></script>
+</body>
+</html>
