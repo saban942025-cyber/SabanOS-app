@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ח.סבן - אזור אישי</title>
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/png" href="./icon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="./styles.css">
+    
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js').catch(err => console.warn('SW Fail', err));
+            });
+        }
+    </script>
+</head>
+<body class="bg-[#e5ddd5] h-[100dvh] flex flex-col overflow-hidden">
+
+    <!-- מסך לוגין (נשמר מהקוד המקורי) -->
+    <div id="loginScreen" class="fixed inset-0 z-50 bg-[#e0e5ec] flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm text-center">
+            <h1 class="text-2xl font-bold mb-6">כניסת לקוחות</h1>
+            <form onsubmit="event.preventDefault(); app.login()">
+                <input type="text" id="loginName" class="w-full p-3 border rounded-lg mb-3" placeholder="שם מלא" required>
+                <input type="tel" id="loginPhone" class="w-full p-3 border rounded-lg mb-6" placeholder="טלפון" required>
+                <button type="submit" class="w-full bg-[#008069] text-white font-bold py-3 rounded-xl shadow">התחבר</button>
+            </form>
+            <a href="./index.html" class="block mt-4 text-sm text-gray-400">חזרה לתפריט</a>
+        </div>
+    </div>
+
+    <!-- האפליקציה הראשית -->
+    <div id="mainApp" class="flex flex-col h-full hidden">
+        <header class="bg-[#008069] text-white p-3 shadow flex justify-between items-center z-10">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center overflow-hidden">
+                    <img src="./icon.png" class="w-full h-full object-cover">
+                </div>
+                <div>
+                    <h1 class="font-bold">ח.סבן</h1>
+                    <div class="text-xs text-green-100" id="userNameDisplay">...</div>
+                </div>
+            </div>
+            <button onclick="app.logout()" class="text-red-200 hover:text-white p-2"><i class="fas fa-sign-out-alt"></i></button>
+        </header>
+
+        <main id="chatContainer" class="flex-1 overflow-y-auto p-4 flex flex-col gap-2 bg-[url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')] opacity-95"></main>
+
+        <footer class="bg-[#f0f2f5] p-2 flex items-center gap-2 border-t z-20">
+            <button onclick="document.getElementById('orderModal').classList.remove('hidden')" class="p-3 bg-orange-500 text-white rounded-full shadow"><i class="fas fa-clipboard-list"></i></button>
+            <input type="text" id="msgInput" class="flex-1 bg-white rounded-lg px-4 py-3 shadow-sm outline-none" placeholder="הודעה..." onkeypress="if(event.key==='Enter') app.sendText()">
+            <button onclick="app.sendText()" class="p-3 bg-[#008069] text-white rounded-full shadow"><i class="fas fa-paper-plane"></i></button>
+        </footer>
+    </div>
+    
+    <!-- Order Modal -->
+    <div id="orderModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-end justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-t-2xl p-6">
+            <h3 class="font-bold text-lg mb-4 text-[#008069]">הזמנה חדשה</h3>
+            <textarea id="orderContent" class="w-full border p-3 rounded-lg h-32 bg-gray-50 mb-3" placeholder="פירוט..."></textarea>
+            <div class="flex gap-2"><button onclick="document.getElementById('orderModal').classList.add('hidden')" class="flex-1 py-3 border rounded-lg">ביטול</button><button onclick="app.submitOrder()" class="flex-1 py-3 bg-[#008069] text-white font-bold rounded-lg shadow">שלח</button></div>
+        </div>
+    </div>
+
+    <!-- הלוגיקה המקורית שלך -->
+    <script type="module" src="./app.js"></script>
+
+    <!-- !!! האינטגרציה: הבוט האוטומטי !!! -->
+    <script type="module" src="/bot-widget.js"></script>
+</body>
+</html>
