@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ח.סבן - קטלוג חכם (Freedom Edition)</title>
     
-    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIuYXneXlueZl9ecIOXlueZl9ecIiwKICAic2hvcnRfbmFtZSI6ICLmF53l5bnmZfXnCIsKICAic3RhcnRfdXJsIjogIi4vaW5kZXguaHRtbCIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmZmZmZmYiLAogICJ0aGVtZV9jb2xvciI6ICIjMTRiOGE2IiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9jZG4taWNvbnMtcG5nLmZsYXRpY29uLmNvbS81MTIvMjUvMjU2OTQucG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9wbmciCiAgICB9CiAgXQp9">
+    <!-- תיקון: שימוש בקובץ manifest חיצוני -->
+    <link rel="manifest" href="manifest.json">
+    <!-- תיקון: הוספת Favicon למניעת שגיאת 404 -->
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/25/25694.png">
+    
     <meta name="theme-color" content="#14b8a6">
 
     <!-- Libraries -->
@@ -49,7 +53,10 @@
         const { motion, AnimatePresence } = window.Motion;
 
         // --- PocketBase Connection ---
-        const PB_URL = 'http://127.0.0.1:8090'; // שנה ל-IP של השרת שלך אם צריך
+        // TODO: החלף את הכתובת למטה בכתובת ה-Cloudflare Tunnel שלך!
+        // לדוגמה: https://api-saban.your-domain.com
+        const PB_URL = 'https://YOUR-TUNNEL-URL-HERE'; 
+        
         const pb = new PocketBase(PB_URL);
         pb.autoCancellation(false);
 
@@ -57,11 +64,12 @@
         const DataService = {
             subscribeProducts: (cb) => {
                 // Initial fetch
-                pb.collection('products').getFullList({ sort: '-created' }).then(cb);
+                pb.collection('products').getFullList({ sort: '-created' }).then(cb).catch(err => {
+                    console.error("Connection Error:", err);
+                    if(err.status === 0) alert("שגיאת חיבור לשרת. ודא שכתובת ה-Tunnel מעודכנת.");
+                });
                 // Realtime subscription
                 pb.collection('products').subscribe('*', function(e) {
-                    // For simplicity in this demo, we re-fetch all on change. 
-                    // Optimized app would merge changes.
                     pb.collection('products').getFullList({ sort: '-created' }).then(cb);
                 });
                 return () => pb.collection('products').unsubscribe('*');
@@ -70,11 +78,11 @@
                 pb.collection('categories').getFullList().then(list => {
                     if(list.length === 0) cb([{id: 'all', name: 'הכל', icon: 'LayoutGrid'}]);
                     else cb([{id: 'all', name: 'הכל', icon: 'LayoutGrid'}, ...list]);
-                });
+                }).catch(err => console.error("Categories Error:", err));
             }
         };
 
-        // --- 1. LOGIC ENGINES (From original file) ---
+        // --- 1. LOGIC ENGINES ---
         const ProductAnalyzer = {
             analyze: (product) => {
                 if (!product) return [];
