@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SabanOS - התקנת מסד נתונים</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
+
+    <div class="max-w-2xl w-full bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-700">
+        <h1 class="text-3xl font-black mb-2 text-teal-400">🛠️ התקנת SabanOS</h1>
+        <p class="text-gray-400 mb-6">כלי זה יצור אוטומטית את הטבלאות (Collections) הנדרשות ב-PocketBase.</p>
+
+        <!-- התחברות אדמין -->
+        <div id="loginSection" class="space-y-4">
+            <div class="bg-yellow-900/30 p-4 rounded-lg border border-yellow-700 text-yellow-200 text-sm">
+                ⚠️ עליך להתחבר עם חשבון ה-<b>Admin</b> שיצרת ב-PocketBase כדי לבצע שינויים במבנה הנתונים.
+            </div>
+            <input type="email" id="email" placeholder="Admin Email" class="w-full p-3 bg-gray-900 border border-gray-600 rounded-lg text-white" value="admin@saban.com">
+            <input type="password" id="password" placeholder="Admin Password" class="w-full p-3 bg-gray-900 border border-gray-600 rounded-lg text-white">
+            <button onclick="loginAndInstall()" class="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-3 rounded-lg transition">התחבר והתקן סכמה</button>
+        </div>
+
+        <!-- לוג התקנה -->
+        <div id="console" class="hidden mt-6 bg-black p-4 rounded-lg font-mono text-xs h-64 overflow-y-auto text-green-400 border border-gray-700">
+            > מוכן להתקנה...
+        </div>
+    </div>
+
+    <script>
+        const PB_URL = 'http://127.0.0.1:8090'; // ודא שזה תואם לשרת שלך
+        const pb = new PocketBase(PB_URL);
+        const consoleDiv = document.getElementById('console');
+
+        function log(msg, type='info') {
+            const color = type === 'error' ? 'text-red-400' : (type === 'success' ? 'text-blue-400' : 'text-green-400');
+            consoleDiv.innerHTML += `<div class="${color}">> ${msg}</div>`;
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+
+        async function loginAndInstall() {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+
+            document.getElementById('loginSection').classList.add('opacity-50', 'pointer-events-none');
+            document.getElementById('console').classList.remove('hidden');
+
+            try {
+                log("מתחבר לשרת...");
+                await pb.admins.authWithPassword(email, pass);
+                log("התחברות הצליחה! מתחיל בהתקנה...", "success");
+                await createSchema();
+            } catch (err) {
+                log("שגיאה בהתחברות: " + err.message, "error");
+                document.getElementById('loginSection').classList.remove('opacity-50', 'pointer-events-none');
+            }
+        }
+
+        async function createSchema() {
+            const collections = [
+                {
+                    name: 'categories',
+                    type: 'base',
+                    schema: [
+                        { name: 'name', type: 'text', required: true },
+                        { name: 'icon', type: 'text' },
+                        { name: 'slug', type: 'text' } // מזהה ייחודי באנגלית
+                    ]
+                },
+                {
+                    name: 'products',
+                    type: 'base',
+                    schema: [
+                        { name: 'title', type: 'text', required: true },
+                        { name: 'sku', type: 'text' },
+                        { name: 'price', type: 'number' },
+                        { name: 'description', type: 'text' },
+                        { name: 'image', type: 'url' }, // נשתמש ב-URL חיצוניים לנוחות
+                        { name: 'brand', type: 'text' },
+                        { name: 'category', type: 'text' }, // נשמור את ה-ID של הקטגוריה
+                        { name: 'features', type: 'json' }, // מערך תכונות
+                        { name: 'technicalSpecs', type: 'json' } // אובייקט מפרט טכני
+                    ]
+                },
+                {
+                    name: 'orders',
+                    type: 'base',
+                    schema: [
+                        { name: 'clientName', type: 'text' },
+                        { name: 'clientPhone', type: 'text' },
+                        { name: 'items', type: 'json' },
+                        { name: 'total', type: 'number' },
+                        { name: 'status', type: 'select', options: { values: ['new', 'processing', 'shipped', 'delivered', 'cancelled'] } },
+                        { name: 'notes', type: 'text' }
+                    ]
+                },
+                {
+                    name: 'chats',
+                    type: 'base',
+                    schema: [
+                        { name: 'customerPhone', type: 'text' },
+                        { name: 'messages', type: 'json' },
+                        { name: 'status', type: 'select', options: { values: ['open', 'closed'] } }
+                    ]
+                }
+            ];
+
+            for (const col of collections) {
+                try {
+                    log(`בודק קולקציה: ${col.name}...`);
+                    // ננסה להביא את הקולקציה כדי לראות אם היא קיימת
+                    try {
+                        await pb.collections.getOne(col.name);
+                        log(`⚠️ קולקציה ${col.name} כבר קיימת. מדלג.`);
+                    } catch (e) {
+                        // אם נכשל (404), סימן שלא קיימת -> ניצור אותה
+                        log(`יוצר קולקציה חדשה: ${col.name}...`);
+                        await pb.collections.create({
+                            ...col,
+                            // פותח את הגישה לכולם (לצורך הפיתוח)
+                            listRule: "",
+                            viewRule: "",
+                            createRule: "",
+                            updateRule: "",
+                            deleteRule: ""
+                        });
+                        log(`✅ ${col.name} נוצרה בהצלחה!`, "success");
+                    }
+                } catch (err) {
+                    log(`❌ שגיאה ב- ${col.name}: ${err.message}`, "error");
+                }
+            }
+
+            // יצירת נתוני דוגמה (Seed)
+            await seedData();
+
+            log("🏁 ההתקנה הסתיימה! כעת ניתן להשתמש באפליקציה.", "success");
+        }
+
+        async function seedData() {
+            log("--- יוצר נתוני התחלה (קטגוריות) ---");
+            const cats = [
+                { name: 'כללי', icon: 'LayoutGrid', slug: 'all' },
+                { name: 'מליטה', icon: 'Component', slug: 'cement' },
+                { name: 'בלוקים', icon: 'Box', slug: 'blocks' },
+                { name: 'צבע', icon: 'PaintBucket', slug: 'paint' },
+                { name: 'כלי עבודה', icon: 'Hammer', slug: 'tools' }
+            ];
+
+            for (const c of cats) {
+                try {
+                    // יוצר רק אם אין שגיאה (פשטני)
+                    await pb.collection('categories').create(c);
+                    log(`נוצרה קטגוריה: ${c.name}`);
+                } catch(e) { /* מתעלם מכפילויות */ }
+            }
+        }
+    </script>
+</body>
+</html>
