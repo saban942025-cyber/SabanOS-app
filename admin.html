@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Saban Admin - PocketBase</title>
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/25/25694.png">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -26,15 +28,21 @@
         const { useState, useEffect, useMemo, useRef } = React;
         
         // --- PocketBase Connection ---
-        const PB_URL = 'http://127.0.0.1:8090';
+        // TODO: החלף את הכתובת למטה בכתובת ה-Cloudflare Tunnel שלך!
+        // לדוגמה: https://api-saban.your-domain.com
+        const PB_URL = 'https://YOUR-TUNNEL-URL-HERE';
+        
         const pb = new PocketBase(PB_URL);
         pb.autoCancellation(false);
 
         // --- Data Service (PB Adapter) ---
         const dbService = {
             getProducts: async (cb) => {
-                const records = await pb.collection('products').getFullList({ sort: '-created' });
-                cb(records);
+                const records = await pb.collection('products').getFullList({ sort: '-created' }).catch(err => {
+                    console.error("Fetch Error:", err);
+                    if(err.status === 0) alert("שגיאת חיבור. בדוק את ה-Tunnel.");
+                });
+                if(records) cb(records);
             },
             saveProduct: async (data, id) => {
                 try {
