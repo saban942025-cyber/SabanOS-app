@@ -1,0 +1,35 @@
+PocketBase system files
+
+pocketbase.exe
+pocketbase
+pb_data/
+pb_migrations/
+*.db
+*.log
+
+System files
+
+.DS_Store
+Thumbs.db
+node_modules/
+.env
+
+
+### שלב 2: איך להעלות את הפרויקט (צעד אחר צעד)
+
+1.  **פתח חשבון ו-Repository חדש ב-GitHub:**
+    * תן לו שם, למשל `saban-os-freedom`.
+    * אל תסמן "Initialize with README".
+
+2.  **פתח טרמינל בתיקיית הפרויקט אצלך במחשב:**
+    ```bash
+    git init
+    git add .
+    git commit -m "Initial commit - SabanOS Freedom Edition"
+    ```
+
+3.  **חבר ל-GitHub (החלף בקישור שלך):**
+    ```bash
+    git branch -M main
+    git remote add origin https://github.com/YOUR_USERNAME/saban-os-freedom.git
+    git push -u origin main
