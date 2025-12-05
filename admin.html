@@ -28,9 +28,9 @@
         const { useState, useEffect, useMemo, useRef } = React;
         
         // --- PocketBase Connection ---
-        // ⚠️ חשוב: החלף את הכתובת הזו בכתובת האמיתית של ה-Cloudflare Tunnel שלך!
-        // כרגע זה מכוון לכתובת דוגמה שגורמת לשגיאה.
-        const PB_URL = 'https://imaginative-daffodil-ef1064.netlify.app/';
+        // 👇👇👇 את השורה הזו אתה צריך לערוך! 👇👇👇
+        // מחק את הטקסט בתוך הגרשיים והדבק את הכתובת שהעתקת מ-Cloudflare
+        const PB_URL = 'https://YOUR-REAL-TUNNEL-ADDRESS.trycloudflare.com';
         
         const pb = new PocketBase(PB_URL);
         pb.autoCancellation(false);
@@ -40,7 +40,7 @@
             getProducts: async (cb) => {
                 const records = await pb.collection('products').getFullList({ sort: '-created' }).catch(err => {
                     console.error("Fetch Error:", err);
-                    if(err.status === 0) alert("שגיאת חיבור. בדוק את ה-Tunnel.");
+                    if(err.status === 0) alert("שגיאת חיבור לשרת. ודא שה-Tunnel פעיל ושהכתובת בקוד נכונה.");
                 });
                 if(records) cb(records);
             },
@@ -64,9 +64,6 @@
                 } catch(e) { cb([]); }
             },
             addCategory: async (cat) => {
-                // בדיקה אם קיים
-                // ב-PB לכל רשומה יש ID אוטומטי, אבל אנחנו רוצים להשתמש ב-ID שלנו לסינון
-                // לכן נחפש אם קיים שדה מזהה אחר או פשוט ניצור חדש
                 await pb.collection('categories').create(cat);
             },
             deleteCategory: async (id) => {
@@ -96,7 +93,6 @@
                 if (!query) return;
                 setLoading(true);
                 try {
-                    // מפתחות ה-API שסיפקת נשמרו כאן
                     const GOOGLE_API_KEY = "AIzaSyBtTsufWhuB7_Xn6TUONpGQ7ydlpmgynUI"; 
                     const CX = "3331a7d5c75e14f26"; 
                     const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${CX}&q=${encodeURIComponent(query)}`;
@@ -162,8 +158,8 @@
                     description: form.description,
                     image: form.image,
                     category: form.category,
-                    features: form.features.split(',').map(s=>s.trim()).filter(Boolean), // Array
-                    technicalSpecs: { // JSON Object
+                    features: form.features.split(',').map(s=>s.trim()).filter(Boolean),
+                    technicalSpecs: {
                         coveragePerM2: form.coverage,
                         dryingTime: form.drying,
                         standard: form.standard
